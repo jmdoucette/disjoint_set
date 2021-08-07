@@ -6,6 +6,5 @@ authors = ["jmdoucette <jmdoucette41@gmail.com>"]
 edition = "2018"
 
 license = "MIT"
-
 repository = "https://github.com/jmdoucette/disjoint_set"
 readme = "README.md"
