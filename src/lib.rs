@@ -10,35 +10,14 @@ pub enum DisjointSetError {
 }
 
 #[derive(Clone, Default, Debug, Eq)]
-pub struct DisjointSetPathSplitting<T: Hash + Eq> {
+pub struct DisjointSet<T: Hash + Eq> {
     val_to_index: HashMap<T, usize>,
     parents: Vec<Option<usize>>,
     sizes: Vec<usize>,
 }
 
-pub struct Iter<'a, T: Hash + Eq> {
-    hashmap_iter: std::collections::hash_map::Iter<'a, T, usize>,
-}
-
-impl<'a, T: Hash + Eq> Iterator for Iter<'a, T> {
-    type Item = &'a T;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.hashmap_iter.next().map(|x| x.0)
-    }
-}
-
-pub struct IntoIter<T: Hash + Eq> {
-    hashmap_into_iter: std::collections::hash_map::IntoIter<T, usize>,
-}
-
-impl<T: Hash + Eq> Iterator for IntoIter<T> {
-    type Item = T;
-    fn next(&mut self) -> Option<Self::Item> {
-        self.hashmap_into_iter.next().map(|x| x.0)
-    }
-}
-
-impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
+impl<T: Hash + Eq> DisjointSet<T> {
+    /// Creates a new, empty `DisjointSet`.
     pub fn new() -> Self {
         Self {
             val_to_index: HashMap::new(),
@@ -47,6 +26,11 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         }
     }
 
+    /// Creates a new, empty `DisjointSet` with the specified capacity.
+    ///
+    /// This preallocates enough memory for `capacity` elements,
+    /// so that the `DisjointSet` does not have to be reallocated
+    /// until it contains at least that many values.
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             val_to_index: HashMap::with_capacity(capacity),
@@ -55,26 +39,26 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         }
     }
 
-    /// Checks if a disoint set is empty
-    pub fn is_empty(&self) -> bool {
-        self.val_to_index.is_empty()
-    }
-
-    /// Returns the number of elements in a disjoint set
+    /// Returns the number of elements in a disjoint set.
     pub fn len(&self) -> usize {
         self.val_to_index.len()
     }
 
+    /// Returns `true` if the disjoint set data structure contains no elements.
+    pub fn is_empty(&self) -> bool {
+        self.val_to_index.is_empty()
+    }
+
+    /// Returns `true` if the disjoint set data structure contains the specified element.
     pub fn contains(&self, x: &T) -> bool {
         self.val_to_index.contains_key(x)
     }
 
-    /// Adds an element to a disjoint set. Returns true if item was not present, false if it was
+    /// Adds a value to the disjoint set data structure.
     ///
-    /// # Arguments
-    ///
-    /// * `x` - Item to add to disoint set
-    pub fn add(&mut self, x: T) -> bool {
+    /// If the disjoint set data structure did not contain this element, `true` is returned.
+    /// If the disjoint set data structure did contain this element, `false` is returned.
+    pub fn insert(&mut self, x: T) -> bool {
         if self.contains(&x) {
             return false;
         }
@@ -85,12 +69,10 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         true
     }
 
-    /// Combines the sets containing the two given elements
+    /// Combines the sets containing the two specified elements.
     ///
-    /// # Arguments
-    ///
-    /// * `x` - First items to union
-    /// * `y` - Second item to union
+    /// If the disjoint set data structure does not contain both elements,
+    /// an error is returned and no change occurs
     pub fn union(&mut self, x: &T, y: &T) -> Result<(), DisjointSetError> {
         let x = *self
             .val_to_index
@@ -105,12 +87,12 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
 
         // x and y are already in the same set, no work needed
         if sx != sy {
-            // x is in the larger set, x becomes ys parent
+            // x is in the larger set, x becomes parent of y
             if self.sizes[sx] >= self.sizes[sy] {
                 self.parents[sy] = Some(sx);
                 self.sizes[sx] += self.sizes[sy];
             }
-            // y is in the larger set, y becomes xs parent
+            // y is in the larger set, y becomes parent of x
             else {
                 self.parents[sx] = Some(sy);
                 self.sizes[sy] += self.sizes[sx];
@@ -119,11 +101,7 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         Ok(())
     }
 
-    /// Finds the number of the set containing an element
-    ///
-    /// # Arguments
-    ///
-    /// * `x` - Item to find
+    /// Returns the index of
     fn find(&self, x: usize) -> usize {
         let mut curr = x;
         while let Some(parent) = self.parents[curr] {
@@ -141,12 +119,10 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         curr
     }
 
-    /// Checks if two elements are in the same set
+    /// Returns `true` if the two specified elements are contained in the same set
     ///
-    /// # Arguments
-    ///
-    /// * `x` - First element
-    /// * `y` - Second element
+    /// If the disjoint set data structure does not contain both elements,
+    /// an error is returned
     pub fn same_set(&mut self, x: &T, y: &T) -> Result<bool, DisjointSetError> {
         let x = *self
             .val_to_index
@@ -162,6 +138,8 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
         Ok(sx == sy)
     }
 
+    /// An iterator visiting all elements in arbitrary order.
+    /// The iterator element type is &'a T
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             hashmap_iter: self.val_to_index.iter(),
@@ -169,7 +147,22 @@ impl<T: Hash + Eq> DisjointSetPathSplitting<T> {
     }
 }
 
-impl<T: Hash + Eq> IntoIterator for DisjointSetPathSplitting<T> {
+/// An iterator over the elements of a `DisjointSet`.
+///
+/// This `struct` is created by the [`iter`] method on [`DisjointSet`].
+/// See its documentation for more.
+pub struct Iter<'a, T: Hash + Eq> {
+    hashmap_iter: std::collections::hash_map::Iter<'a, T, usize>,
+}
+
+impl<'a, T: Hash + Eq> Iterator for Iter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.hashmap_iter.next().map(|x| x.0)
+    }
+}
+
+impl<T: Hash + Eq> IntoIterator for DisjointSet<T> {
     type Item = T;
     type IntoIter = IntoIter<T>;
     fn into_iter(self) -> IntoIter<T> {
@@ -179,25 +172,40 @@ impl<T: Hash + Eq> IntoIterator for DisjointSetPathSplitting<T> {
     }
 }
 
-impl<T: Hash + Eq> FromIterator<T> for DisjointSetPathSplitting<T> {
+/// An owning iterator over the elements of a `DisjointSet`.
+///
+/// This `struct` is created by the [`into_iter`] method on [`DisjointSet`]
+/// (provided by the `IntoIterator` trait). See its documentation for more.
+pub struct IntoIter<T: Hash + Eq> {
+    hashmap_into_iter: std::collections::hash_map::IntoIter<T, usize>,
+}
+
+impl<T: Hash + Eq> Iterator for IntoIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.hashmap_into_iter.next().map(|x| x.0)
+    }
+}
+
+impl<T: Hash + Eq> FromIterator<T> for DisjointSet<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut ds = DisjointSetPathSplitting::new();
+        let mut ds = DisjointSet::new();
         for i in iter {
-            ds.add(i);
+            ds.insert(i);
         }
         ds
     }
 }
 
-impl<T: Hash + Eq> Extend<T> for DisjointSetPathSplitting<T> {
+impl<T: Hash + Eq> Extend<T> for DisjointSet<T> {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for i in iter {
-            self.add(i);
+            self.insert(i);
         }
     }
 }
 
-impl<T: Hash + Eq> PartialEq for DisjointSetPathSplitting<T> {
+impl<T: Hash + Eq> PartialEq for DisjointSet<T> {
     fn eq(&self, other: &Self) -> bool {
         if self.len() != other.len() {
             return false;
@@ -238,43 +246,43 @@ impl<T: Hash + Eq> PartialEq for DisjointSetPathSplitting<T> {
 mod tests {
     use super::*;
     #[test]
-    fn test_add() {
-        let mut ds = DisjointSetPathSplitting::new();
+    fn test_insert() {
+        let mut ds = DisjointSet::new();
         assert!(ds.is_empty());
         assert_eq!(ds.len(), 0);
 
-        assert!(ds.add(1));
-        assert!(!ds.add(1));
-        assert!(!ds.add(1));
-        assert!(ds.add(2));
+        assert!(ds.insert(1));
+        assert!(!ds.insert(1));
+        assert!(!ds.insert(1));
+        assert!(ds.insert(2));
         assert!(!ds.is_empty());
         assert_eq!(ds.len(), 2);
     }
 
     #[test]
     fn test_err() {
-        let mut ds = DisjointSetPathSplitting::new();
+        let mut ds = DisjointSet::new();
         assert!(ds.union(&1, &2).is_err());
         assert!(ds.same_set(&1, &2).is_err());
 
-        assert!(ds.add(1));
+        assert!(ds.insert(1));
         assert!(ds.union(&1, &2).is_err());
         assert!(ds.same_set(&1, &2).is_err());
 
-        assert!(!ds.add(1));
+        assert!(!ds.insert(1));
         assert!(ds.union(&1, &2).is_err());
         assert!(ds.same_set(&1, &2).is_err());
 
-        assert!(ds.add(2));
+        assert!(ds.insert(2));
         assert!(ds.union(&1, &2).is_ok());
         assert!(ds.same_set(&1, &2).is_ok());
     }
 
     #[test]
     fn test_union_and_same_set() {
-        let mut ds = DisjointSetPathSplitting::new();
+        let mut ds = DisjointSet::new();
         for i in 0..8 {
-            assert!(ds.add(i));
+            assert!(ds.insert(i));
         }
         assert!(!ds.same_set(&0, &2).unwrap());
         assert!(!ds.same_set(&0, &2).unwrap());
@@ -307,9 +315,9 @@ mod tests {
 
     #[test]
     fn test_iter() {
-        let mut ds = DisjointSetPathSplitting::new();
+        let mut ds = DisjointSet::new();
         for i in 0..10 {
-            assert!(ds.add(i));
+            assert!(ds.insert(i));
         }
         let mut items = Vec::new();
         for x in ds.iter() {
@@ -318,16 +326,15 @@ mod tests {
         items.sort_unstable();
         assert_eq!(items, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-        //ensuring it has not been moved
-        assert!(!ds.add(2));
-        assert!(ds.add(15));
+        assert!(!ds.insert(2));
+        assert!(ds.insert(15));
     }
 
     #[test]
     fn test_into_iter() {
-        let mut ds = DisjointSetPathSplitting::new();
+        let mut ds = DisjointSet::new();
         for i in 0..10 {
-            assert!(ds.add(i));
+            assert!(ds.insert(i));
         }
         let mut items: Vec<u32> = Vec::new();
         for x in ds {
@@ -340,7 +347,7 @@ mod tests {
     #[test]
     fn test_from_iter() {
         let items = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let ds: DisjointSetPathSplitting<u32> = items.into_iter().collect();
+        let ds: DisjointSet<u32> = items.into_iter().collect();
         for i in 0..10 {
             assert!(ds.contains(&i));
         }
@@ -350,10 +357,10 @@ mod tests {
 
     #[test]
     fn test_extend() {
-        let mut ds = DisjointSetPathSplitting::new();
-        assert!(ds.add(3));
-        assert!(ds.add(12));
-        assert!(ds.add(10));
+        let mut ds = DisjointSet::new();
+        assert!(ds.insert(3));
+        assert!(ds.insert(12));
+        assert!(ds.insert(10));
 
         let items = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
         ds.extend(items.into_iter());
@@ -366,30 +373,30 @@ mod tests {
 
     #[test]
     fn test_eq() {
-        let mut ds1 = DisjointSetPathSplitting::new();
-        assert!(ds1.add(3));
-        assert!(ds1.add(12));
-        assert!(ds1.add(10));
+        let mut ds1 = DisjointSet::new();
+        assert!(ds1.insert(3));
+        assert!(ds1.insert(12));
+        assert!(ds1.insert(10));
         ds1.union(&3, &12).unwrap();
 
-        let mut ds2 = DisjointSetPathSplitting::new();
+        let mut ds2 = DisjointSet::new();
         assert_ne!(ds1, ds2);
         assert_ne!(ds2, ds1);
 
-        assert!(ds2.add(3));
+        assert!(ds2.insert(3));
         assert_ne!(ds1, ds2);
         assert_ne!(ds2, ds1);
 
-        assert!(ds2.add(12));
+        assert!(ds2.insert(12));
         assert_ne!(ds1, ds2);
         assert_ne!(ds2, ds1);
 
-        assert!(ds2.add(2));
+        assert!(ds2.insert(2));
         assert_ne!(ds1, ds2);
         assert_ne!(ds2, ds1);
 
-        assert!(ds1.add(2));
-        assert!(ds2.add(10));
+        assert!(ds1.insert(2));
+        assert!(ds2.insert(10));
         assert_ne!(ds1, ds2);
         assert_ne!(ds2, ds1);
 
