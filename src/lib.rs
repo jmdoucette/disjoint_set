@@ -237,7 +237,7 @@ impl<T: Hash + Eq> PartialEq for DisjointSet<T> {
     }
 }
 
-/// The possible errors that may be raised by the disjoint set data structure
+/// The possible errors that may be raised by the `DisjointSet`.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum DisjointSetError {
