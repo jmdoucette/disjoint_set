@@ -2,13 +2,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::iter::FromIterator;
 
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum DisjointSetError {
-    MissingElement,
-    Full,
-}
-
+/// A disjoint set implemented using a disjoint set forest.
 #[derive(Clone, Default, Debug, Eq)]
 pub struct DisjointSet<T: Hash + Eq> {
     val_to_index: HashMap<T, usize>,
@@ -54,7 +48,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
         self.val_to_index.contains_key(x)
     }
 
-    /// Adds a value to the disjoint set data structure.
+    /// Adds a element to the disjoint set data structure as a singleton set.
     ///
     /// If the disjoint set data structure did not contain this element, `true` is returned.
     /// If the disjoint set data structure did contain this element, `false` is returned.
@@ -241,6 +235,13 @@ impl<T: Hash + Eq> PartialEq for DisjointSet<T> {
         }
         true
     }
+}
+
+/// The possible errors that may be raised by the disjoint set data structure
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum DisjointSetError {
+    MissingElement,
 }
 
 #[cfg(test)]
