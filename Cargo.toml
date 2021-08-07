@@ -8,4 +8,5 @@ edition = "2018"
 license = "MIT"
 repository = "https://github.com/jmdoucette/disjoint_set_forest"
 documentation = "https://docs.rs/disjoint_set_forest"
+keywords = []
 readme = "README.md"
