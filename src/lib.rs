@@ -39,7 +39,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
         }
     }
 
-    /// Returns the number of elements in a disjoint set.
+    /// Returns the number of elements in a disjoint set data structure.
     pub fn len(&self) -> usize {
         self.val_to_index.len()
     }
