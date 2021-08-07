@@ -12,7 +12,7 @@ pub enum DisjointSetError {
 #[derive(Clone, Default, Debug, Eq)]
 pub struct DisjointSet<T: Hash + Eq> {
     val_to_index: HashMap<T, usize>,
-    parents: Vec<Option<usize>>,
+    parents: Vec<usize>,
     sizes: Vec<usize>,
 }
 
@@ -63,9 +63,9 @@ impl<T: Hash + Eq> DisjointSet<T> {
             return false;
         }
 
-        self.val_to_index.insert(x, self.len());
-        self.parents.push(None);
+        self.parents.push(self.len());
         self.sizes.push(1);
+        self.val_to_index.insert(x, self.len());
         true
     }
 
@@ -89,12 +89,12 @@ impl<T: Hash + Eq> DisjointSet<T> {
         if sx != sy {
             // x is in the larger set, x becomes parent of y
             if self.sizes[sx] >= self.sizes[sy] {
-                self.parents[sy] = Some(sx);
+                self.parents[sy] = sx;
                 self.sizes[sx] += self.sizes[sy];
             }
             // y is in the larger set, y becomes parent of x
             else {
-                self.parents[sx] = Some(sy);
+                self.parents[sx] = sy;
                 self.sizes[sy] += self.sizes[sx];
             }
         }
@@ -104,17 +104,17 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// Returns the index of
     fn find(&self, x: usize) -> usize {
         let mut curr = x;
-        while let Some(parent) = self.parents[curr] {
-            curr = parent;
+        while curr != self.parents[curr] {
+            curr = self.parents[curr];
         }
         curr
     }
 
     fn find_compress(&mut self, x: usize) -> usize {
         let mut curr = x;
-        while let Some(next) = self.parents[curr] {
-            curr = next;
-            self.parents[curr] = self.parents[next];
+        while curr != self.parents[curr] {
+            self.parents[curr] = self.parents[self.parents[curr]];
+            curr = self.parents[curr];
         }
         curr
     }
