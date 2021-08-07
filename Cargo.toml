@@ -1,10 +1,10 @@
 [package]
-name = "disjoint_set"
+name = "disjoint_set_forest"
 description = "A disjoint set data structure implemented using a disjoint set forest."
 version = "0.1.0"
 authors = ["jmdoucette <jmdoucette41@gmail.com>"]
 edition = "2018"
 
 license = "MIT"
-repository = "https://github.com/jmdoucette/disjoint_set"
+repository = "https://github.com/jmdoucette/disjoint_set_forest"
 readme = "README.md"
