@@ -72,7 +72,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// Combines the sets containing the two specified elements.
     ///
     /// If the disjoint set data structure does not contain both elements,
-    /// an error is returned and no change occurs
+    /// an error is returned and no change occurs.
     pub fn union(&mut self, x: &T, y: &T) -> Result<(), DisjointSetError> {
         let x = *self
             .val_to_index
@@ -101,7 +101,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
         Ok(())
     }
 
-    /// Returns the index of
+    /// Returns the index of the set containing the element with the given index.
     fn find(&self, x: usize) -> usize {
         let mut curr = x;
         while curr != self.parents[curr] {
@@ -110,6 +110,8 @@ impl<T: Hash + Eq> DisjointSet<T> {
         curr
     }
 
+    /// Returns the index of the set containing the element with the given index.
+    /// Compresses path using path splitting
     fn find_compress(&mut self, x: usize) -> usize {
         let mut curr = x;
         while curr != self.parents[curr] {
@@ -119,10 +121,9 @@ impl<T: Hash + Eq> DisjointSet<T> {
         curr
     }
 
-    /// Returns `true` if the two specified elements are contained in the same set
+    /// Returns `true` if the two specified elements are contained in the same set.
     ///
-    /// If the disjoint set data structure does not contain both elements,
-    /// an error is returned
+    /// If the disjoint set data structure does not contain both elements, an error is returned.
     pub fn same_set(&mut self, x: &T, y: &T) -> Result<bool, DisjointSetError> {
         let x = *self
             .val_to_index
@@ -139,7 +140,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
     }
 
     /// An iterator visiting all elements in arbitrary order.
-    /// The iterator element type is &'a T
+    /// The iterator element type is &'a T.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             hashmap_iter: self.val_to_index.iter(),
@@ -174,7 +175,7 @@ impl<T: Hash + Eq> IntoIterator for DisjointSet<T> {
 
 /// An owning iterator over the elements of a `DisjointSet`.
 ///
-/// This `struct` is created by the [`into_iter`] method on [`DisjointSet`]
+/// This `struct` is created by the [`into_iter`] method on [`DisjointSet`].
 /// (provided by the `IntoIterator` trait). See its documentation for more.
 pub struct IntoIter<T: Hash + Eq> {
     hashmap_into_iter: std::collections::hash_map::IntoIter<T, usize>,
