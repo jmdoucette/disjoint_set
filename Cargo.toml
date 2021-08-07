@@ -1,9 +1,11 @@
 [package]
 name = "disjoint_set"
+description = "A disjoint set data structure implemented using a disjoint set forest."
 version = "0.1.0"
 authors = ["jmdoucette <jmdoucette41@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
 
-[dependencies]
+repository = "https://github.com/jmdoucette/disjoint_set"
+readme = "README.md"
