@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use std::hash::Hash;
-//use std::fmt;
+use std::fmt;
 use std::iter::FromIterator;
 
 /// A disjoint set implemented using a disjoint set forest.
-#[derive(Clone, Default, Debug, Eq)]
+#[derive(Clone, Default, Eq)]
 pub struct DisjointSet<T: Hash + Eq> {
     val_to_index: HashMap<T, usize>,
     parents: Vec<usize>,
@@ -149,17 +149,23 @@ impl<T: Hash + Eq> DisjointSet<T> {
         }
 
         let mut sets = Vec::new();
-
         for _ in 0..self.len() {
             sets.push(Vec::new());
         }
-
         for i in 0..self.len() {
             sets[self.find(i)].push(index_to_val[&i]);
         }
-        let sets: Vec<SetElements<'_, &T>> = sets.iter().map(|set| SetElements{element_iter: set.iter()}).collect();
+
+        let mut set_elements = Vec::new();
+        for set in sets {
+            if !set.is_empty() {
+                set_elements.push(SetElements{
+                    element_iter: set.into_iter() 
+                })
+            }
+        }
         Sets {
-            set_iter: sets.iter()
+            set_iter: set_elements.into_iter()
         }
     }
 
@@ -223,18 +229,19 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
 }
 
 pub struct Sets<'a, T: Hash + Eq> {
-    pub set_iter:  std::slice::Iter<'a, SetElements<'a, T>>,
+    pub set_iter:  std::vec::IntoIter<SetElements<'a, T>>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for Sets<'a, T> {
-    type Item = &'a SetElements<'a, T>;
+    type Item = SetElements<'a, T>;
     fn next(&mut self) -> Option<Self::Item> {
         self.set_iter.next()
     }
 }
 
+#[derive(Clone)]
 pub struct SetElements<'a, T: Hash + Eq> {
-    pub element_iter: std::slice::Iter<'a, T>,
+    pub element_iter: std::vec::IntoIter<&'a T>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for SetElements<'a, T> {
@@ -243,13 +250,13 @@ impl<'a, T: Hash + Eq> Iterator for SetElements<'a, T> {
         self.element_iter.next()
     }
 }
-/*
-impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for DisjointSet<T> {
+
+impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for SetElements<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_set().entries(self.iter()).finish()
+        f.debug_set().entries(self.clone()).finish()
     }
 }
-*/
+
 
 /*
 pub struct IntoSets<T: Hash + Eq> {
@@ -323,14 +330,12 @@ impl<T: Hash + Eq> PartialEq for DisjointSet<T> {
     }
 }
 
-/*
 impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for DisjointSet<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let sets = self.clone().sets();
-        f.debug_set().entries(sets.iter()).finish()
+        f.debug_set().entries(self.sets()).finish()
     }
 }
-*/
+
 
 /// The possible errors that may be raised by the `DisjointSet`.
 #[derive(Debug)]
@@ -516,18 +521,17 @@ mod tests {
         for i in 0..8 {
             assert!(ds.insert(i));
         }
+        println!("{:?}", ds);
         ds.union(&2, &4).unwrap();
+        println!("{:?}", ds);
         ds.union(&4, &2).unwrap();
+        println!("{:?}", ds);
         ds.union(&1, &7).unwrap();
+        println!("{:?}", ds);
         ds.union(&3, &5).unwrap();
+        println!("{:?}", ds);
         ds.union(&2, &6).unwrap();
-
-        for set in ds.sets() {
-            for element in set {
-                println!("{}", element);
-            }
-            println!("set end");
-        }
+        println!("{:?}", ds);
         panic!();
     }
 }
