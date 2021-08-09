@@ -487,6 +487,19 @@ mod tests {
         ds.union(&2, &4).unwrap();
         ds.union(&4, &2).unwrap();
         ds.union(&1, &7).unwrap();
+
+        let mut sets_vec = Vec::new();
+        for set in ds.sets() {
+            let mut curr = Vec::new();
+            for element in set {
+                curr.push(*element);
+            }
+            curr.sort_unstable();
+            sets_vec.push(curr);
+        }
+        sets_vec.sort_unstable();
+        assert_eq!(sets_vec, vec![vec![0], vec![1, 7], vec![2, 4], vec![3], vec![5], vec![6]]);
+
         ds.union(&3, &5).unwrap();
         ds.union(&2, &6).unwrap();
         
@@ -501,5 +514,7 @@ mod tests {
         }
         sets_vec.sort_unstable();
         assert_eq!(sets_vec, vec![vec![0], vec![1, 7], vec![2, 4, 6], vec![3, 5]]);
+
+
     }
 }
