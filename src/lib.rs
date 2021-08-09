@@ -168,24 +168,6 @@ impl<T: Hash + Eq> DisjointSet<T> {
             set_iter: set_elements.into_iter()
         }
     }
-
-    /*
-    pub fn into_sets(self) -> Vec<Vec<T>> {
-        let mut index_sets = Vec::new();
-        for i in 0..self.len() {
-            index_sets.push(self.find(i));
-        }
-        let mut sets = Vec::new();
-        for _ in 0..self.len() {
-            sets.push(Vec::new());
-        }
-        
-        for (element, index) in self.val_to_index {
-            sets[index_sets[index]].push(element);
-        }
-        sets.into_iter().filter(|set| !set.is_empty()).collect()
-    }
-    */
 }
 
 /// An iterator over the elements of a `DisjointSet`.
@@ -256,24 +238,6 @@ impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for SetElements<'_, T> {
         f.debug_set().entries(self.clone()).finish()
     }
 }
-
-
-/*
-pub struct IntoSets<T: Hash + Eq> {
-    sets: Vec<IntoSetElements<T>>,
-}
-
-pub struct IntoSetElements<T: Hash + Eq> {
-    set: Vec<T>,
-}
-
-
-impl<T: fmt::Debug + Hash + Eq> fmt::Debug for IntoSetElements<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_set().entries(self.sets()).finish()
-    }
-}
-*/
 
 impl<T: Hash + Eq> FromIterator<T> for DisjointSet<T> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
