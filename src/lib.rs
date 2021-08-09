@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::hash::Hash;
 use std::fmt;
+use std::hash::Hash;
 use std::iter::FromIterator;
 
 /// A disjoint set implemented using a disjoint set forest.
@@ -159,13 +159,13 @@ impl<T: Hash + Eq> DisjointSet<T> {
         let mut set_elements = Vec::new();
         for set in sets {
             if !set.is_empty() {
-                set_elements.push(SetElements{
-                    element_iter: set.into_iter() 
+                set_elements.push(SetElements {
+                    element_iter: set.into_iter(),
                 })
             }
         }
         Sets {
-            set_iter: set_elements.into_iter()
+            set_iter: set_elements.into_iter(),
         }
     }
 }
@@ -211,7 +211,7 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
 }
 
 pub struct Sets<'a, T: Hash + Eq> {
-    pub set_iter:  std::vec::IntoIter<SetElements<'a, T>>,
+    pub set_iter: std::vec::IntoIter<SetElements<'a, T>>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for Sets<'a, T> {
@@ -299,7 +299,6 @@ impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for DisjointSet<T> {
         f.debug_set().entries(self.sets()).finish()
     }
 }
-
 
 /// The possible errors that may be raised by the `DisjointSet`.
 #[derive(Debug)]
