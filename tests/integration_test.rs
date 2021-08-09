@@ -9,7 +9,7 @@ struct Edge {
 
 impl Edge {
     pub fn new(u: usize, v: usize, weight: i32) -> Self {
-        Self {u, v, weight}
+        Self { u, v, weight }
     }
 }
 
@@ -28,7 +28,6 @@ fn kruskal(n: usize, mut edges: Vec<Edge>) -> Vec<Edge> {
     }
     msf
 }
-
 
 #[test]
 fn test_kruskal() {
@@ -67,10 +66,6 @@ fn test_kruskal() {
     ];
     let mut msf2 = kruskal(3, edges2);
     msf2.sort_by_key(|edge| (edge.u, edge.v));
-    let expected2 = vec![
-        Edge::new(0, 1, -2),
-        Edge::new(1, 2, 7),
-    ];
+    let expected2 = vec![Edge::new(0, 1, -2), Edge::new(1, 2, 7)];
     assert_eq!(msf2, expected2);
-
 }
