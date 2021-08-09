@@ -484,17 +484,22 @@ mod tests {
         for i in 0..8 {
             assert!(ds.insert(i));
         }
-        println!("{:?}", ds);
         ds.union(&2, &4).unwrap();
-        println!("{:?}", ds);
         ds.union(&4, &2).unwrap();
-        println!("{:?}", ds);
         ds.union(&1, &7).unwrap();
-        println!("{:?}", ds);
         ds.union(&3, &5).unwrap();
-        println!("{:?}", ds);
         ds.union(&2, &6).unwrap();
-        println!("{:?}", ds);
-        panic!();
+        
+        let mut sets_vec = Vec::new();
+        for set in ds.sets() {
+            let mut curr = Vec::new();
+            for element in set {
+                curr.push(*element);
+            }
+            curr.sort_unstable();
+            sets_vec.push(curr);
+        }
+        sets_vec.sort_unstable();
+        assert_eq!(sets_vec, vec![vec![0], vec![1, 7], vec![2, 4, 6], vec![3, 5]]);
     }
 }
