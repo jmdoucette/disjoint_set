@@ -348,14 +348,23 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// # Examples
     /// ```
     /// use disjoint_set_forest::DisjointSet;
-    /// let mut ds = DisjointSet::with_capacity(100);
+    /// let mut ds: DisjointSet<i32> = DisjointSet::with_capacity(100);
     /// assert!(ds.capacity() >= 100);
-    /// ds.insert(5);
     /// ```
     pub fn capacity(&mut self) -> usize {
         min(self.val_to_index.capacity(), min(self.parents.capacity(), self.sizes.capacity()))
     }
 
+    /// Reserves capacity for at least [`additional`] more elements to be inserted in the [`DisjointSet`]. 
+    /// The collection may reserve more space to avoid frequent reallocations.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds: DisjointSet<i32> = DisjointSet::new();
+    /// ds.reserve(100);
+    /// assert!(ds.capacity() >= 100);
+    /// ```
     pub fn reserve(&mut self, additional: usize) {
         self.val_to_index.reserve(additional);
         self.parents.reserve(additional);
