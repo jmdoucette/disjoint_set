@@ -358,7 +358,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
         )
     }
 
-    /// Reserves capacity for at least [`additional`] more elements to be inserted in the [`DisjointSet`].
+    /// Reserves capacity for at least `additional` more elements to be inserted in the [`DisjointSet`].
     /// The collection may reserve more space to avoid frequent reallocations.
     ///
     /// # Examples
