@@ -4,6 +4,40 @@ use std::hash::Hash;
 use std::iter::FromIterator;
 
 /// A disjoint set implemented using a disjoint set forest.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use disjoint_set_forest::DisjointSet;
+/// 
+/// // Type inference lets us omit an explicit type signature (which
+/// // would be `DisjointSet<i32>` in this example).
+/// let mut ds = DisjointSet::new();
+/// 
+/// // Adding some elements
+/// ds.insert(1);
+/// ds.insert(2);
+/// ds.insert(3);
+/// 
+/// // All elements are currently in separate sets in the partition
+/// assert!(!ds.same_set(&1, &2).unwrap());
+/// assert!(!ds.same_set(&1, &3).unwrap());
+/// assert!(!ds.same_set(&2, &3).unwrap());
+/// 
+/// // combining several sets
+/// ds.union(&1, &2);
+/// ds.union(&2, &3);
+/// 
+/// // All elements are now in the same set in the partition
+/// assert!(ds.same_set(&1, &2).unwrap());
+/// assert!(ds.same_set(&1, &3).unwrap());
+/// assert!(ds.same_set(&2, &3).unwrap());
+/// 
+/// // iterating through the elements in arbitrary order
+/// for x in ds.iter() {
+///     println!("{}", x);
+/// }
+/// ```
 #[derive(Clone, Default, Eq)]
 pub struct DisjointSet<T: Hash + Eq> {
     val_to_index: HashMap<T, usize>,
@@ -13,6 +47,13 @@ pub struct DisjointSet<T: Hash + Eq> {
 
 impl<T: Hash + Eq> DisjointSet<T> {
     /// Creates a new, empty `DisjointSet`.
+    /// 
+    /// # Examples
+    /// ``` 
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(5);
+    /// ```
     pub fn new() -> Self {
         Self {
             val_to_index: HashMap::new(),
@@ -22,10 +63,16 @@ impl<T: Hash + Eq> DisjointSet<T> {
     }
 
     /// Creates a new, empty `DisjointSet` with the specified capacity.
-    ///
     /// This preallocates enough memory for `capacity` elements,
     /// so that the `DisjointSet` does not have to be reallocated
     /// until it contains at least that many values.
+    /// 
+    /// # Examples
+    /// ``` 
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::with_capacity(10);
+    /// ds.insert(5);
+    /// ```
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             val_to_index: HashMap::with_capacity(capacity),
@@ -35,16 +82,49 @@ impl<T: Hash + Eq> DisjointSet<T> {
     }
 
     /// Returns the number of elements in a disjoint set data structure.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(5);
+    /// ds.insert(10);
+    /// 
+    /// assert_eq!(ds.len(), 2);
+    /// ```
     pub fn len(&self) -> usize {
         self.val_to_index.len()
     }
 
     /// Returns `true` if the disjoint set data structure contains no elements.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// 
+    /// assert!(ds.is_empty());
+    /// 
+    /// ds.insert(5);
+    /// ds.insert(10);
+    /// 
+    /// assert!(!ds.is_empty());
     pub fn is_empty(&self) -> bool {
         self.val_to_index.is_empty()
     }
 
     /// Returns `true` if the disjoint set data structure contains the specified element.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(5);
+    /// ds.insert(10);
+    /// 
+    /// assert!(ds.contains(&5));
+    /// assert!(!ds.contains(&6));
+    /// ```
     pub fn contains(&self, x: &T) -> bool {
         self.val_to_index.contains_key(x)
     }
@@ -53,6 +133,16 @@ impl<T: Hash + Eq> DisjointSet<T> {
     ///
     /// If the disjoint set data structure did not contain this element, `true` is returned.
     /// If the disjoint set data structure did contain this element, `false` is returned.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// 
+    /// assert_eq!(ds.insert(5), true);
+    /// assert_eq!(ds.insert(5), false);
+    /// assert_eq!(ds.len(), 1);
+    /// ```
     pub fn insert(&mut self, x: T) -> bool {
         if self.contains(&x) {
             return false;
@@ -68,6 +158,29 @@ impl<T: Hash + Eq> DisjointSet<T> {
     ///
     /// If the disjoint set data structure does not contain both elements,
     /// an error is returned and no change occurs.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(1);
+    /// ds.insert(2);
+    /// ds.insert(3);
+    /// 
+    /// assert!(!ds.same_set(&1, &2).unwrap());
+    /// assert!(!ds.same_set(&1, &3).unwrap());
+    /// assert!(!ds.same_set(&2, &3).unwrap());
+    /// 
+    /// ds.union(&1, &2).unwrap();
+    /// ds.union(&2, &3).unwrap();
+    /// 
+    /// assert!(ds.same_set(&1, &2).unwrap());
+    /// assert!(ds.same_set(&1, &3).unwrap());
+    /// assert!(ds.same_set(&2, &3).unwrap());
+    /// 
+    /// // calling union with an element not contained within the partition
+    /// assert!(ds.union(&1, &4).is_err());
+    /// ```
     pub fn union(&mut self, x: &T, y: &T) -> Result<(), DisjointSetError> {
         let x = *self
             .val_to_index
@@ -119,6 +232,29 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// Returns `true` if the two specified elements are contained in the same set.
     ///
     /// If the disjoint set data structure does not contain both elements, an error is returned.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(1);
+    /// ds.insert(2);
+    /// ds.insert(3);
+    /// 
+    /// assert!(!ds.same_set(&1, &2).unwrap());
+    /// assert!(!ds.same_set(&1, &3).unwrap());
+    /// assert!(!ds.same_set(&2, &3).unwrap());
+    /// 
+    /// ds.union(&1, &2).unwrap();
+    /// ds.union(&2, &3).unwrap();
+    /// 
+    /// assert!(ds.same_set(&1, &2).unwrap());
+    /// assert!(ds.same_set(&1, &3).unwrap());
+    /// assert!(ds.same_set(&2, &3).unwrap());
+    /// 
+    /// // calling same_set on elements not already contained within the partition
+    /// assert!(ds.same_set(&1, &4).is_err());
+    /// ```
     pub fn same_set(&mut self, x: &T, y: &T) -> Result<bool, DisjointSetError> {
         let x = *self
             .val_to_index
@@ -136,12 +272,46 @@ impl<T: Hash + Eq> DisjointSet<T> {
 
     /// An iterator visiting all elements in arbitrary order.
     /// The iterator element type is &'a T.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(1);
+    /// ds.insert(2);
+    /// ds.insert(3);
+    /// 
+    /// // prints 1, 2, 3 in arbitrary order
+    /// for x in ds.iter() {
+    ///     println!("{}", x);
+    /// }
+    /// ```
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             hashmap_iter: self.val_to_index.iter(),
         }
     }
 
+    /// An iterator of iterators over the sets in the disjoint set partition
+    /// The iterator element type is iterators with element &'a T
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(1);
+    /// ds.insert(2);
+    /// ds.insert(3);
+    /// ds.union(&1, &2).unwrap();
+    /// 
+    /// // prints set: 1 2 set: 3 or with some permutation of the sets or elements within each set
+    /// for set in ds.sets() {
+    ///     println!("set:");
+    ///     for x in set {
+    ///         println!("{}", x);
+    ///     }
+    /// }
+    /// ```
     pub fn sets(&self) -> Sets<'_, T> {
         let mut index_to_val = HashMap::new();
         for (element, &index) in self.val_to_index.iter() {
@@ -172,7 +342,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
 
 /// An iterator over the elements of a `DisjointSet`.
 ///
-/// This `struct` is created by the [`iter`] method on [`DisjointSet`].
+/// This `struct` is created by the `iter` method on [`DisjointSet`].
 /// See its documentation for more.
 pub struct Iter<'a, T: Hash + Eq> {
     hashmap_iter: std::collections::hash_map::Iter<'a, T, usize>,
@@ -197,7 +367,7 @@ impl<T: Hash + Eq> IntoIterator for DisjointSet<T> {
 
 /// An owning iterator over the elements of a `DisjointSet`.
 ///
-/// This `struct` is created by the [`into_iter`] method on [`DisjointSet`].
+/// This `struct` is created by the `into_iter` method on [`DisjointSet`].
 /// (provided by the `IntoIterator` trait). See its documentation for more.
 pub struct IntoIter<T: Hash + Eq> {
     hashmap_into_iter: std::collections::hash_map::IntoIter<T, usize>,
@@ -211,7 +381,7 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
 }
 
 pub struct Sets<'a, T: Hash + Eq> {
-    pub set_iter: std::vec::IntoIter<SetElements<'a, T>>,
+    set_iter: std::vec::IntoIter<SetElements<'a, T>>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for Sets<'a, T> {
@@ -223,7 +393,7 @@ impl<'a, T: Hash + Eq> Iterator for Sets<'a, T> {
 
 #[derive(Clone)]
 pub struct SetElements<'a, T: Hash + Eq> {
-    pub element_iter: std::vec::IntoIter<&'a T>,
+    element_iter: std::vec::IntoIter<&'a T>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for SetElements<'a, T> {
