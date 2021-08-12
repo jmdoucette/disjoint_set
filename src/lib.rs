@@ -370,6 +370,16 @@ impl<T: Hash + Eq> DisjointSet<T> {
         self.parents.reserve(additional);
         self.sizes.reserve(additional);
     }
+
+    /// Shrinks the capacity of the disjoint set data structure as much as possible. 
+    /// It will drop down as much as possible while maintaining the internal rules 
+    /// and possibly leaving some space in accordance with the resize policy.
+    pub fn shrink_to_fit(&mut self) {
+        self.val_to_index.shrink_to_fit();
+        self.parents.shrink_to_fit();
+        self.sizes.shrink_to_fit();
+    }
+
 }
 
 /// An iterator over the elements of a `DisjointSet`.
