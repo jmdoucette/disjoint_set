@@ -374,6 +374,15 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// Shrinks the capacity of the disjoint set data structure as much as possible. 
     /// It will drop down as much as possible while maintaining the internal rules 
     /// and possibly leaving some space in accordance with the resize policy.
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds: DisjointSet<i32> = DisjointSet::with_capacity(100);
+    /// assert!(ds.capacity() >= 100);
+    /// ds.shrink_to_fit();
+    /// assert!(ds.capacity() == 0);
+    /// ```
     pub fn shrink_to_fit(&mut self) {
         self.val_to_index.shrink_to_fit();
         self.parents.shrink_to_fit();
