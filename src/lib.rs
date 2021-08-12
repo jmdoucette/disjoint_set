@@ -1,3 +1,4 @@
+//! This package implements the [`DisjointSet`] data structure using a disjoint set forest.
 use std::cmp::min;
 use std::collections::HashMap;
 use std::fmt;
@@ -349,6 +350,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// ```
     /// use disjoint_set_forest::DisjointSet;
     /// let mut ds: DisjointSet<i32> = DisjointSet::with_capacity(100);
+    /// 
     /// assert!(ds.capacity() >= 100);
     /// ```
     pub fn capacity(&mut self) -> usize {
@@ -366,6 +368,7 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// use disjoint_set_forest::DisjointSet;
     /// let mut ds: DisjointSet<i32> = DisjointSet::new();
     /// ds.reserve(100);
+    /// 
     /// assert!(ds.capacity() >= 100);
     /// ```
     pub fn reserve(&mut self, additional: usize) {
@@ -382,8 +385,11 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// ```
     /// use disjoint_set_forest::DisjointSet;
     /// let mut ds: DisjointSet<i32> = DisjointSet::with_capacity(100);
+    /// 
     /// assert!(ds.capacity() >= 100);
+    /// 
     /// ds.shrink_to_fit();
+    /// 
     /// assert!(ds.capacity() == 0);
     /// ```
     pub fn shrink_to_fit(&mut self) {
@@ -401,8 +407,8 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// ds.insert(5);
     /// ds.insert(10);
     /// ds.union(&5, &10);
-    ///
     /// ds.clear();
+    /// 
     /// assert!(ds.is_empty());
     /// ```
     pub fn clear(&mut self) {
