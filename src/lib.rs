@@ -344,6 +344,14 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// 
     /// This number is a lower bound; the [`DisjointSet`] may be able to hold more, but it is guaranteed
     /// to be able to hold at least this many
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::with_capacity(100);
+    /// assert!(ds.capacity() >= 100);
+    /// ds.insert(5);
+    /// ```
     pub fn capacity(&mut self) -> usize {
         min(self.val_to_index.capacity(), min(self.parents.capacity(), self.sizes.capacity()))
     }
