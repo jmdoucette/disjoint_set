@@ -389,6 +389,24 @@ impl<T: Hash + Eq> DisjointSet<T> {
         self.sizes.shrink_to_fit();
     }
 
+    /// Clears the disjoint set data structure, removing all elements
+    /// 
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(5);
+    /// ds.insert(10);
+    /// ds.union(&5, &10);
+    /// 
+    /// ds.clear();
+    /// assert!(ds.is_empty());
+    /// ```
+    pub fn clear(&mut self) {
+        self.val_to_index.clear();
+        self.parents.clear();
+        self.sizes.clear();
+    }
 }
 
 /// An iterator over the elements of a `DisjointSet`.
