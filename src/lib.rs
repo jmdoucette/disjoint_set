@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
+use std::cmp::min;
 
 /// A disjoint set implemented using a disjoint set forest.
 /// 
@@ -337,6 +338,14 @@ impl<T: Hash + Eq> DisjointSet<T> {
         Sets {
             set_iter: set_elements.into_iter(),
         }
+    }
+
+    /// Returns the number of elements the disjoint set data structure can hold without reallocating.
+    /// 
+    /// This number is a lower bound; the [`DisjointSet`] may be able to hold more, but it is guaranteed
+    /// to be able to hold at least this many
+    pub fn capacity(&mut self) -> usize {
+        min(self.val_to_index.capacity(), min(self.parents.capacity(), self.sizes.capacity()))
     }
 }
 
