@@ -355,6 +355,12 @@ impl<T: Hash + Eq> DisjointSet<T> {
     pub fn capacity(&mut self) -> usize {
         min(self.val_to_index.capacity(), min(self.parents.capacity(), self.sizes.capacity()))
     }
+
+    pub fn reserve(&mut self, additional: usize) {
+        self.val_to_index.reserve(additional);
+        self.parents.reserve(additional);
+        self.sizes.reserve(additional);
+    }
 }
 
 /// An iterator over the elements of a `DisjointSet`.
