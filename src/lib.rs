@@ -329,15 +329,43 @@ impl<T: Hash + Eq> DisjointSet<T> {
         }
 
         let mut set_elements = Vec::new();
-        for set in partition {
-            if !set.is_empty() {
+        for subset in partition {
+            if !subset.is_empty() {
                 set_elements.push(Subset {
-                    element_iter: set.into_iter(),
+                    subset_iter: subset.into_iter(),
                 })
             }
         }
         Partition {
-            set_iter: set_elements.into_iter(),
+            partition_iter: set_elements.into_iter(),
+        }
+    }
+
+    /// An owning iterator over the partition of subsets
+    pub fn into_partition(self) -> IntoPartition<T> {
+        let mut parents = Vec::new();
+        for i in 0..self.len() {
+            parents.push(self.find(i));
+        }
+
+        let mut partition = Vec::new();
+        for _ in 0..self.len() {
+            partition.push(Vec::new());
+        }
+        for (element, index) in self.val_to_index.into_iter() {
+            partition[parents[index]].push(element);
+        }
+
+        let mut set_elements = Vec::new();
+        for subset in partition {
+            if !subset.is_empty() {
+                set_elements.push(IntoSubset {
+                    subset_into_iter: subset.into_iter(),
+                })
+            }
+        }
+        IntoPartition {
+            partition_into_iter: set_elements.into_iter(),
         }
     }
 
@@ -458,32 +486,58 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
     }
 }
 
+/// iterator over partition
 pub struct Partition<'a, T: Hash + Eq> {
-    set_iter: std::vec::IntoIter<Subset<'a, T>>,
+    partition_iter: std::vec::IntoIter<Subset<'a, T>>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for Partition<'a, T> {
     type Item = Subset<'a, T>;
     fn next(&mut self) -> Option<Self::Item> {
-        self.set_iter.next()
+        self.partition_iter.next()
     }
 }
 
+/// iterator over subset
 #[derive(Clone)]
 pub struct Subset<'a, T: Hash + Eq> {
-    element_iter: std::vec::IntoIter<&'a T>,
+    subset_iter: std::vec::IntoIter<&'a T>,
 }
 
 impl<'a, T: Hash + Eq> Iterator for Subset<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        self.element_iter.next()
+        self.subset_iter.next()
     }
 }
 
 impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for Subset<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.clone()).finish()
+    }
+}
+
+/// owning iterator over partition
+pub struct IntoPartition<T: Hash + Eq> {
+    partition_into_iter: std::vec::IntoIter<IntoSubset<T>>,
+}
+
+impl<T: Hash + Eq> Iterator for IntoPartition<T> {
+    type Item = IntoSubset<T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.partition_into_iter.next()
+    }
+}
+
+/// owning iterator over subset
+pub struct IntoSubset<T: Hash + Eq> {
+    subset_into_iter: std::vec::IntoIter<T>,
+}
+
+impl<T: Hash + Eq> Iterator for IntoSubset<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.subset_into_iter.next()
     }
 }
 
