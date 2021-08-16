@@ -307,9 +307,9 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// ds.union(&1, &2).unwrap();
     ///
     /// // prints set: 1 2 set: 3 or with some permutation of the sets or elements within each set
-    /// for set in ds.sets() {
-    ///     println!("set:");
-    ///     for x in set {
+    /// for subset in ds.partition() {
+    ///     println!("subset:");
+    ///     for x in subset {
     ///         println!("{}", x);
     ///     }
     /// }
@@ -813,6 +813,50 @@ mod tests {
             let mut curr = Vec::new();
             for element in subset {
                 curr.push(*element);
+            }
+            curr.sort_unstable();
+            partition_vec.push(curr);
+        }
+        partition_vec.sort_unstable();
+        assert_eq!(
+            partition_vec,
+            vec![vec![0], vec![1, 7], vec![2, 4, 6], vec![3, 5]]
+        );
+    }
+
+    #[test]
+    fn test_int_partition() {
+        let mut ds = DisjointSet::new();
+        for i in 0..8 {
+            assert!(ds.insert(i));
+        }
+        ds.union(&2, &4).unwrap();
+        ds.union(&4, &2).unwrap();
+        ds.union(&1, &7).unwrap();
+
+        let mut partition_vec = Vec::new();
+        for subset in ds.clone().into_partition() {
+            let mut curr = Vec::new();
+            for element in subset {
+                curr.push(element);
+            }
+            curr.sort_unstable();
+            partition_vec.push(curr);
+        }
+        partition_vec.sort_unstable();
+        assert_eq!(
+            partition_vec,
+            vec![vec![0], vec![1, 7], vec![2, 4], vec![3], vec![5], vec![6]]
+        );
+
+        ds.union(&3, &5).unwrap();
+        ds.union(&2, &6).unwrap();
+
+        let mut partition_vec = Vec::new();
+        for subset in ds.into_partition() {
+            let mut curr = Vec::new();
+            for element in subset {
+                curr.push(element);
             }
             curr.sort_unstable();
             partition_vec.push(curr);
