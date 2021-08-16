@@ -314,29 +314,29 @@ impl<T: Hash + Eq> DisjointSet<T> {
     ///     }
     /// }
     /// ```
-    pub fn sets(&self) -> Sets<'_, T> {
+    pub fn partition(&self) -> Partition<'_, T> {
         let mut index_to_val = HashMap::new();
         for (element, &index) in self.val_to_index.iter() {
             index_to_val.insert(index, element);
         }
 
-        let mut sets = Vec::new();
+        let mut partition = Vec::new();
         for _ in 0..self.len() {
-            sets.push(Vec::new());
+            partition.push(Vec::new());
         }
         for i in 0..self.len() {
-            sets[self.find(i)].push(index_to_val[&i]);
+            partition[self.find(i)].push(index_to_val[&i]);
         }
 
         let mut set_elements = Vec::new();
-        for set in sets {
+        for set in partition {
             if !set.is_empty() {
-                set_elements.push(SetElements {
+                set_elements.push(Subset {
                     element_iter: set.into_iter(),
                 })
             }
         }
-        Sets {
+        Partition {
             set_iter: set_elements.into_iter(),
         }
     }
@@ -458,30 +458,30 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
     }
 }
 
-pub struct Sets<'a, T: Hash + Eq> {
-    set_iter: std::vec::IntoIter<SetElements<'a, T>>,
+pub struct Partition<'a, T: Hash + Eq> {
+    set_iter: std::vec::IntoIter<Subset<'a, T>>,
 }
 
-impl<'a, T: Hash + Eq> Iterator for Sets<'a, T> {
-    type Item = SetElements<'a, T>;
+impl<'a, T: Hash + Eq> Iterator for Partition<'a, T> {
+    type Item = Subset<'a, T>;
     fn next(&mut self) -> Option<Self::Item> {
         self.set_iter.next()
     }
 }
 
 #[derive(Clone)]
-pub struct SetElements<'a, T: Hash + Eq> {
+pub struct Subset<'a, T: Hash + Eq> {
     element_iter: std::vec::IntoIter<&'a T>,
 }
 
-impl<'a, T: Hash + Eq> Iterator for SetElements<'a, T> {
+impl<'a, T: Hash + Eq> Iterator for Subset<'a, T> {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         self.element_iter.next()
     }
 }
 
-impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for SetElements<'_, T> {
+impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for Subset<'_, T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set().entries(self.clone()).finish()
     }
@@ -544,7 +544,7 @@ impl<T: Hash + Eq> PartialEq for DisjointSet<T> {
 
 impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for DisjointSet<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_set().entries(self.sets()).finish()
+        f.debug_set().entries(self.partition()).finish()
     }
 }
 
@@ -727,7 +727,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sets() {
+    fn test_partition() {
         let mut ds = DisjointSet::new();
         for i in 0..8 {
             assert!(ds.insert(i));
@@ -736,36 +736,36 @@ mod tests {
         ds.union(&4, &2).unwrap();
         ds.union(&1, &7).unwrap();
 
-        let mut sets_vec = Vec::new();
-        for set in ds.sets() {
+        let mut partition_vec = Vec::new();
+        for subset in ds.partition() {
             let mut curr = Vec::new();
-            for element in set {
+            for element in subset {
                 curr.push(*element);
             }
             curr.sort_unstable();
-            sets_vec.push(curr);
+            partition_vec.push(curr);
         }
-        sets_vec.sort_unstable();
+        partition_vec.sort_unstable();
         assert_eq!(
-            sets_vec,
+            partition_vec,
             vec![vec![0], vec![1, 7], vec![2, 4], vec![3], vec![5], vec![6]]
         );
 
         ds.union(&3, &5).unwrap();
         ds.union(&2, &6).unwrap();
 
-        let mut sets_vec = Vec::new();
-        for set in ds.sets() {
+        let mut partition_vec = Vec::new();
+        for subset in ds.partition() {
             let mut curr = Vec::new();
-            for element in set {
+            for element in subset {
                 curr.push(*element);
             }
             curr.sort_unstable();
-            sets_vec.push(curr);
+            partition_vec.push(curr);
         }
-        sets_vec.sort_unstable();
+        partition_vec.sort_unstable();
         assert_eq!(
-            sets_vec,
+            partition_vec,
             vec![vec![0], vec![1, 7], vec![2, 4, 6], vec![3, 5]]
         );
     }
