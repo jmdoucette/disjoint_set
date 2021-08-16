@@ -341,7 +341,26 @@ impl<T: Hash + Eq> DisjointSet<T> {
         }
     }
 
-    /// An owning iterator over the partition of subsets
+    /// An iterator of iterators over the sets in the disjoint set partition
+    /// The iterator element type is iterators with element &'a T
+    ///
+    /// # Examples
+    /// ```
+    /// use disjoint_set_forest::DisjointSet;
+    /// let mut ds = DisjointSet::new();
+    /// ds.insert(1);
+    /// ds.insert(2);
+    /// ds.insert(3);
+    /// ds.union(&1, &2).unwrap();
+    ///
+    /// // prints set: 1 2 set: 3 or with some permutation of the sets or elements within each set
+    /// for subset in ds.into_partition() {
+    ///     println!("subset:");
+    ///     for x in subset {
+    ///         println!("{}", x);
+    ///     }
+    /// }
+    /// ```    
     pub fn into_partition(self) -> IntoPartition<T> {
         let mut parents = Vec::new();
         for i in 0..self.len() {
@@ -486,7 +505,11 @@ impl<T: Hash + Eq> Iterator for IntoIter<T> {
     }
 }
 
-/// iterator over partition
+/// An iterator over the subsets in the partition of a `DisjointSet`.
+/// Each subset is itself an iterator over its elements
+/// 
+/// This `struct` is created by the `partition` method of [`DisjointSet`].
+/// See its documentation for more.
 pub struct Partition<'a, T: Hash + Eq> {
     partition_iter: std::vec::IntoIter<Subset<'a, T>>,
 }
@@ -498,7 +521,7 @@ impl<'a, T: Hash + Eq> Iterator for Partition<'a, T> {
     }
 }
 
-/// iterator over subset
+/// An iterator over the elements in a subset in the parition of a `DisjointSet`.
 #[derive(Clone)]
 pub struct Subset<'a, T: Hash + Eq> {
     subset_iter: std::vec::IntoIter<&'a T>,
@@ -517,7 +540,11 @@ impl<T: fmt::Debug + Hash + Eq + Clone> fmt::Debug for Subset<'_, T> {
     }
 }
 
-/// owning iterator over partition
+/// An owning iterator over the subsets in the partition of a `DisjointSet`.
+/// Each subset is itself an owning iterator over its elements
+/// 
+/// This `struct` is created by the `into_partition` method of [`DisjointSet`].
+/// See its documentation for more.
 pub struct IntoPartition<T: Hash + Eq> {
     partition_into_iter: std::vec::IntoIter<IntoSubset<T>>,
 }
@@ -529,7 +556,7 @@ impl<T: Hash + Eq> Iterator for IntoPartition<T> {
     }
 }
 
-/// owning iterator over subset
+/// An owning iterator over the elements in a subset in the parition of a `DisjointSet`.
 pub struct IntoSubset<T: Hash + Eq> {
     subset_into_iter: std::vec::IntoIter<T>,
 }
