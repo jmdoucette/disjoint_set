@@ -315,17 +315,17 @@ impl<T: Hash + Eq> DisjointSet<T> {
     /// }
     /// ```
     pub fn partition(&self) -> Partition<'_, T> {
-        let mut index_to_val = HashMap::new();
-        for (element, &index) in self.val_to_index.iter() {
-            index_to_val.insert(index, element);
+        let mut parents = Vec::new();
+        for i in 0..self.len() {
+            parents.push(self.find(i));
         }
 
         let mut partition = Vec::new();
         for _ in 0..self.len() {
             partition.push(Vec::new());
         }
-        for i in 0..self.len() {
-            partition[self.find(i)].push(index_to_val[&i]);
+        for (element, &index) in self.val_to_index.iter() {
+            partition[parents[index]].push(element);
         }
 
         let mut set_elements = Vec::new();
